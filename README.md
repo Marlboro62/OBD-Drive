@@ -1,4 +1,4 @@
-![HA Torque](https://raw.githubusercontent.com/Marlboro62/Torque-Lite-Pro/main/docs/images/logo.png)
+![OBD Drive](https://raw.githubusercontent.com/Marlboro62/Torque-Lite-Pro/main/docs/images/logo.png)
 
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nothing_one)
 
@@ -7,12 +7,11 @@
 > **Real-time push** of **OBD-II** data from the Android app **Torque Pro** into **Home Assistant**.  
 > Dynamically creates sensors, a per-vehicle GPS *device tracker*, keeps **native metric units**, localizes labels (EN/FR), and exposes an **HTTP endpoint**.
 
-*[Version française]*: voir [readme_fr.md](./readme_fr.md)
 
 ![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Component-03a9f4)
 ![HACS](https://img.shields.io/badge/HACS-Custom-blue.svg)
 ![Status](https://img.shields.io/badge/iot__class-local__push-brightgreen)
-![Version](https://img.shields.io/badge/version-2025.09.3.2-informational)
+![Version](https://img.shields.io/badge/version-2025.X.X-informational)
 
 ---
 
