@@ -1,0 +1,44 @@
+{
+  "title": "OBD Drive",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "email": "Email address",
+          "imperial": "Use imperial units",
+          "language": "Language"
+        }
+      }
+    },
+    "error": {
+      "email_required": "Email is required",
+      "already_configured": "This email is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "imperial": "Use imperial units",
+          "language": "Language",
+          "session_ttl": "Session TTL (seconds)",
+          "max_sessions": "Max sessions (LRU)",
+          "merge_mode": "Merge mode",
+          "merge_name_map": "Name-based merge map",
+          "reject_poor_name": "Reject generic names (e.g., \"Vehicle 123456\")",
+          "require_mapped_name": "Require mapped name in 'By name' mode"
+        },
+        "data_description": {
+          "merge_mode": "How to merge incoming data: 'None' keeps each profile separate; 'By name' merges by the profile/vehicle name; 'By VIN' merges by the vehicle identifier.",
+          "merge_name_map": "Optional mapping rules for 'By name' mode. One rule per line. Examples:\nFocus ST -> Daily\n\"Car #1\" => Model 3\nvan: Transit Custom",
+          "reject_poor_name": "Ignore payloads with generic names (e.g., 'Vehicle 123456') unless a canonical name is provided.",
+          "require_mapped_name": "In 'By name' mode, accept only names that match a mapping rule above (strict mode).",
+          "imperial": "If enabled, converts units to imperial (mph, mi, ft, °F, psi, mpg).",
+          "session_ttl": "Time-to-live in seconds for an in-memory session.",
+          "max_sessions": "Maximum number of in-memory sessions (LRU cache).",
+          "language": "Default language for labels and UI."
+        }
+      }
+    }
+  }
+}

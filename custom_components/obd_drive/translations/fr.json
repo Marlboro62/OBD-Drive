@@ -1,0 +1,44 @@
+{
+  "title": "OBD Drive",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "email": "Adresse e-mail",
+          "imperial": "Utiliser les unités impériales",
+          "language": "Langue"
+        }
+      }
+    },
+    "error": {
+      "email_required": "Adresse e-mail requise",
+      "already_configured": "Cet e-mail est déjà configuré"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "imperial": "Utiliser les unités impériales",
+          "language": "Langue",
+          "session_ttl": "Durée de vie d’une session (s)",
+          "max_sessions": "Nombre max. de sessions (LRU)",
+          "merge_mode": "Mode de fusion",
+          "merge_name_map": "Table de fusion par nom",
+          "reject_poor_name": "Ignorer les noms non parlants (ex. « Vehicle 123456 »)",
+          "require_mapped_name": "Exiger un mappage en mode « Par nom »"
+        },
+        "data_description": {
+          "merge_mode": "Choix de fusion des données entrantes : « Aucune » sépare chaque profil ; « Par nom » fusionne par nom de profil/véhicule ; « Par VIN » fusionne par identifiant véhicule.",
+          "merge_name_map": "Règles de correspondance pour le mode « Par nom ». Une règle par ligne. Exemples :\nFocus ST -> Daily\n\"Voiture #1\" => Model 3\nutilitaire: Transit Custom",
+          "reject_poor_name": "Ignorer les trames avec un nom générique (ex. « Vehicle 123456 »), sauf si un nom canonique est fourni.",
+          "require_mapped_name": "En mode « Par nom », n’accepter que les noms présents dans les règles ci-dessus (mode strict).",
+          "imperial": "Si activé, convertit les unités en impériales (mph, mi, ft, °F, psi, mpg).",
+          "session_ttl": "Durée de vie (en secondes) d’une session en mémoire.",
+          "max_sessions": "Nombre maximum de sessions en mémoire (cache LRU).",
+          "language": "Langue par défaut pour les libellés et l’UI."
+        }
+      }
+    }
+  }
+}
