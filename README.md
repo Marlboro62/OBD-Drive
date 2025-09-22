@@ -1,199 +1,324 @@
-![OBD Drive](https://raw.githubusercontent.com/Marlboro62/Torque-Lite-Pro/main/docs/images/logo.png)
+![OBD Drive](https://raw.githubusercontent.com/Marlboro62/OBD-Drive/main/docs/images/logo.png)
 
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nothing_one)
 
-# Torque Pro — Home Assistant Integration 🇬🇧
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4%EF%B8%8F_GitHub_Sponsors-ff69b4?logo=githubsponsors)](https://github.com/sponsors/Marlboro62)
 
-> **Real-time push** of **OBD-II** data from the Android app **Torque Pro** into **Home Assistant**.  
-> Dynamically creates sensors, a per-vehicle GPS *device tracker*, keeps **native metric units**, localizes labels (EN/FR), and exposes an **HTTP endpoint**.
+# OBD‑Drive — Home Assistant Integration
 
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
+[![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5)](https://www.home-assistant.io/)
+[![Status](https://img.shields.io/badge/Status-Stable-success)](#)
+[![Language](https://img.shields.io/badge/Language-FR%20%2F%20EN-informational)](#)
 
-![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Component-03a9f4)
-![HACS](https://img.shields.io/badge/HACS-Custom-blue.svg)
-![Status](https://img.shields.io/badge/iot__class-local__push-brightgreen)
-![Version](https://img.shields.io/badge/version-2025.X.X-informational)
+Monitor your vehicle’s **OBD‑II data in real time** inside **Home Assistant** using the Android app **Torque** (ELM327). The **OBD‑Drive** integration dynamically exposes sensors (PIDs), creates a GPS *device_tracker*, and auto‑handles metric units.
 
----
-
-## 🔌 Required Hardware
-
-- **OBD-II Bluetooth (ELM327)**
-- Amazon: [OBD2 Bluetooth](https://amzn.to/48bHmPj) *(affiliate link — thank you!)*
+> ⚠️ **Driving**: do not use your phone while driving. This integration is provided **as‑is** with **no warranty**. You are responsible for your safety and your data.
 
 ---
 
 ## ✨ Features
 
-- **Local HTTP receiver** at **`/api/torque_pro`** (GET/POST/HEAD).  
-  Home Assistant authentication **required by default** (recommended).
-- **Dynamic entity creation**:
-  - *Sensors* for known PIDs (with inferred **device_class**/**state_class** when appropriate).
-  - **Per-vehicle GPS device tracker** (lat/lon/alt/accuracy/GPS speed).
-- **Data hygiene & robustness**: NaN/Inf filtering, validated GPS bounds, **s→min** rounding for trip times, **L/100 ↔ KPL/MPG** synthesis when one side is missing.
-- **Language & labels**: EN/FR with automatic fallback.
-- **Stable IDs**: no accidental fusion between vehicles/profiles.
-- **Diagnostics**: detailed, sensitive fields redacted.
-
-> Domain: `torque_pro` — IoT class: `local_push` — Dependency: `http`
+- Receive live uploads from **Torque** via `GET` or `POST` to `/api/obd`
+- **Automatic** sensor (PID) creation with localized names/units (EN/FR)
+- GPS tracking: `device_tracker` (latitude, longitude, altitude, accuracy, speed)
+- **Multi‑vehicle / multi‑profile** (via `profileName` and/or `eml`)
+- Smart unit conversion (e.g., L/100 ↔ KPL/MPG — avoids duplicates)
+- No YAML required (Home Assistant UI)
+- HACS compatible (Custom Repository)
 
 ---
 
-## 📦 Installation
+## 📦 Requirements
+
+- **Home Assistant** (recent version) — *Tested on 2025.9.4*
+- **Android smartphone** with **Torque**  
+  <a href="https://play.google.com/store/apps/details?id=org.prowl.torque" target="_blank" rel="noopener noreferrer">
+    <img alt="Get it on Google Play"
+         src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+         height="40">
+  </a>
+- **OBD‑II Bluetooth dongle** (e.g., **ELM327**)  
+  <a href="https://amzn.to/3KezyCM" target="_blank" rel="noopener noreferrer">
+    <img alt="View on Amazon"
+         src="https://img.shields.io/badge/View%20on-Amazon-FF9900?logo=amazon&logoColor=white">
+  </a>
+- Network access from the phone to Home Assistant (LAN, VPN, or public HTTPS)
+
+---
+
+## 🧭 Table of Contents
+
+- [Installation](#installation)
+  - [Via HACS (recommended)](#via-hacs)
+  - [Manual installation](#manual-installation)
+- [Home Assistant configuration](#home-assistant-configuration)
+- [Settings in Torque (Android)](#settings-in-torque-android)
+  - [Supported parameters](#supported-parameters)
+  - [URL examples](#url-examples)
+- [Created entities](#created-entities)
+- [Dashboard (Lovelace example)](#lovelace-dashboard-example)
+- [Security & exposure](#security-exposure)
+- [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Credits](#credits)
+
+---
+
+<a id="installation"></a>
+
+## Installation 🚀
+
+<a id="via-hacs"></a>
 
 ### Via HACS (recommended)
-1. **HACS → Integrations →** ••• **→ Custom repositories** → add this repo.
-2. Search **Torque Pro** and install.
-3. Restart Home Assistant if prompted.
 
-### Manual install
-1. Copy `custom_components/torque_pro/` into `config/custom_components/`.
-2. Restart Home Assistant.
+[![Open repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Marlboro62&repository=OBD-Drive&category=integration)
 
----
+1. Open **HACS → Integrations → ⋮ (menu) → Custom repositories**  
+2. Add repo: `https://github.com/Marlboro62/OBD-Drive` as type **Integration**  
+3. Search for **OBD‑Drive** and install the integration  
+4. **Restart Home Assistant** if prompted
 
-## ⚙️ Configuration (UI)
+> ℹ️ If you don’t see the integration, refresh HACS (**⋮ → Reload**) and **restart Home Assistant**.
 
-1. **Settings → Devices & Services → Add Integration → “Torque Pro”.**
-2. Fill in:
-   - **Email (required)**: used to **route** uploads (`eml=<your email>`).
-   - **Language**: `en` or `fr` (sensor labels).
-   - **Memory preferences**: session TTL (60–86400 s), LRU size (10–1000).
+[![Start configuration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=obd_drive)
 
-> You can create **multiple entries** (e.g., *Torque Pro Phone 1* / *Torque Pro Phone 2*) and route each phone via its **`eml=`**.
+<a id="manual-installation"></a>
 
----
+### Manual installation
 
-## 📱 “Torque Pro” App Settings (Android)
+1. Download the latest release and **copy** the folder `custom_components/obd_drive/`  
+   into your HA config: `<config>/custom_components/obd_drive/`  
+2. **Restart Home Assistant**
 
-**Torque Pro → Settings → Data Logging & Upload → Web server URL**
-
-- **URL**: `https://your-domain/api/torque_pro`
-- **Method**: GET **or** POST (both supported)
-- **Parameters** (in the URL, after `?`):
-  - `session=${session}`  ← **required**
-  - `eml=<email>`        ← must **match** the HA entry that should receive the data
-  - `profileName=${profile}` *(or `vehicle=${profile}` / `name=${profile}`)*  ← **recommended** (keeps each profile/car/person separate)
-  - `id=${vehicleId}`     *(optional, encouraged)*
-  - `lang=en`             *(optional)*
-  - **GPS fallback** *(if your profile doesn’t include GPS PIDs)*:  
-    `lat=${lat}&lon=${lon}&alt=${altitude}&acc=${gpsacc}`
-
-> **Torque automatically** appends `k<code>=<value>` pairs for PIDs.  
-> Do **not** add `imperial=`: ingestion remains **metric-native** (HA handles display conversion).
-
-### Examples (multi-entry)
-- **One phone**:  
-  `https://XXXXXX.duckdns.org/api/torque_pro?eml=XXXXXXXXXX@gmail.com&lang=en&session=${session}&profileName=${profile}&id=${vehicleId}`
-- **Two phone**:  
-  `https://XXXXX.duckdns.org/api/torque_pro?eml=XXXXXXXXXX@gmail.com&lang=en&session=${session}&profileName=${profile}&id=${vehicleId}`
+> On Home Assistant OS / Container, `<config>` is your config directory (where `configuration.yaml` lives).
 
 ---
 
-## ✅ PID Best Practices
+<a id="home-assistant-configuration"></a>
 
-Avoid checking *everything* in Torque:
+## ⚙️ Home Assistant configuration
 
-1. Too many PIDs **slow down** ECU reads and **inflate** uploads.
-2. You’ll create **unnecessary sensors** (noise).
-3. Risk of **duplicates**: the integration already synthesizes **L/100 ↔ KPL/MPG** if one side is present.
-4. Many PIDs are **unsupported** on some ECUs (0/N.A.) — uncheck them.
+From the UI: **Settings → Devices & services → Add integration → OBD‑Drive**
 
----
+Common fields:
 
-## 🧩 Entities Created
+- **Email (eml)**: logical identifier to route uploads (required if you have multiple phones)
+- **Language**: `en` or `fr` for automatic labels
+- **Memory / session (optional)**: session TTL, LRU size, cleanup
 
-- **Device** per vehicle (ID **deterministic**).
-- **Sensors (`sensor.*`)**: created *on the fly* (EN/FR label, unit, suggested display precision).  
-  Examples: RPM, OBD/GPS speed, temperatures, MAF/MAP, barometric pressure, battery voltage, fuel economy, etc.
-- **Device tracker (`device_tracker.*`)**: lat/lon/alt/accuracy/GPS speed.
+> 💡 You can create **multiple integration entries** (one phone/vehicle per entry) or share a single entry and pass `eml`/`profileName` from Torque.
 
-> GPS lat/lon feed the **device_tracker** and aren’t duplicated as sensors.
+No YAML is required. Everything is configured in the UI.
 
 ---
 
-## 🔐 Security (important)
+<a id="settings-in-torque-android"></a>
 
-Torque **cannot** send an `Authorization` header. For secure public exposure:
+## 📱 Settings in Torque (Android)
 
-- Use a **reverse proxy** (Nginx/Traefik) that **injects** `Authorization: Bearer <token>`.
-- Or restrict access via **VPN** (WireGuard/Tailscale) / local network.
-- **Avoid** exposing the endpoint openly on the Internet.
+In **Torque**: **Settings → Data logging & upload → Web server URL (webhook)**
 
-> By default, the endpoint requires HA auth. Never expose tokens in clear text.
+- **URL**: `https://your-domain-or-ip/api/obd`
+- **Method**: `GET` or `POST`
+- **Recommended parameters**:
+
+| Parameter | Req. | Description |
+|---|:--:|---|
+| `session=<session>` | ✅ | Session ID (generated by the integration or set by you) |
+| `eml=<email>` | ✅* | Multi‑phone / multi‑entry routing (*required when using multiple entries*) |
+| `profileName=<profile>` | ✅* | Separates vehicles/profiles (*strongly recommended*) |
+| `id=<vehicleId>` | ⭕ | Vehicle identifier on the integration side |
+| `lang=en` / `fr` | ⭕ | Force language on the integration side |
+| `lat=<lat>&lon=<lon>&alt=<altitude>&acc=<gpsacc>` | ⭕ | **GPS fallback** when your PIDs don’t include GPS |
+| *(do not send `imperial`)* | — | The integration ingests **metric**; HA converts if needed |
+
+<a id="supported-parameters"></a>
+
+### Supported parameters
+
+- `session`, `eml`, `profileName`, `id`, `lang`, `lat`, `lon`, `alt`, `acc`.
+
+<a id="url-examples"></a>
+
+### URL examples
+
+**Minimal (single phone / single entry):**
+```
+https://ha.example.org/api/obd?session=<session>&profileName=<profile>
+```
+
+**Multiple phones (route by email):**
+```
+https://ha.example.org/api/obd?eml=alex@example.com&session=<session>&profileName=<profile>&id=<vehicleId>
+```
+
+**With forced language and GPS fallback:**
+```
+https://ha.example.org/api/obd?eml=car@family.com&lang=en&session=<session>&profileName=<profile>&lat=<lat>&lon=<lon>&alt=<altitude>&acc=<gpsacc>
+```
+
+> Tip: start simple (GET, a few essential PIDs), verify in HA, then add more as needed.
 
 ---
 
-## ⚙️ Behavior & Options
+<a id="created-entities"></a>
 
-- **LRU/TTL memory**: sessions kept with configurable TTL (60–86400 s) and max size (10–1000).
-- **Availability**: entities remain available while recent data exists (or last restored / 0 for some counters).
-- **Units / display**:
-  - **Metric-native** ingestion (no destructive conversions).
-  - **L/100 ↔ KPL/MPG** synthesis if one side is missing.
-  - **s→min** rounding for trip time.
-  - **Suggested display precision** by unit (speed, pressure, etc.).
-- **Stable per-vehicle/profile ID** (prevents cross-profile/phone fusion):
-  - based on `slug(profileName)` + `id[:4]` + small email-derived salt (if present).
-- **Multi-entry**: `eml=` **routes** to the proper entry.
+## 🧩 Created entities
+
+- **Sensors (`sensor.*`)** — Standard PIDs: engine RPM, OBD/GPS speed, coolant temperature, intake air temperature, MAP, battery voltage, calculated load, average/instant fuel consumption, etc.  
+  Units are set automatically with EN/FR labels.
+- **Device tracker (`device_tracker.*`)** — GPS position (lat/lon/alt), accuracy, GPS speed.  
+  One *device_tracker* per vehicle/profile.
+
+> Entities are created **dynamically** once the first samples arrive. If a sensor is missing, make sure the corresponding PID is enabled in Torque.
 
 ---
+
+<a id="lovelace-dashboard-example"></a>
+
+## 📊 Dashboard (Lovelace example)
+
+Paste this YAML into a dashboard (replace `car_1` with your *entity_id* / device name):
+
+```yaml
+title: OBD‑Drive
+type: vertical-stack
+cards:
+  - type: glance
+    title: Engine
+    entities:
+      - entity: sensor.car_1_engine_rpm
+        name: RPM
+      - entity: sensor.car_1_coolant_temp
+        name: Coolant temp
+      - entity: sensor.car_1_intake_temp
+        name: Intake temp
+      - entity: sensor.car_1_battery_voltage
+        name: Battery
+
+  - type: gauge
+    name: OBD speed
+    entity: sensor.car_1_speed_obd
+    min: 0
+    max: 220
+
+  - type: gauge
+    name: GPS speed
+    entity: sensor.car_1_speed_gps
+    min: 0
+    max: 220
+
+  - type: statistics-graph
+    entities:
+      - sensor.car_1_fuel_consumption_instant
+    days_to_show: 1
+    stat_types:
+      - mean
+      - min
+      - max
+    hide_legend: false
+
+  - type: map
+    entities:
+      - device_tracker.car_1
+    aspect_ratio: 16x9
+```
+
+---
+
+<a id="security-exposure"></a>
+
+## 🔐 Security & exposure
+
+- By default, `/api/obd` **honors Home Assistant authentication**. However, the **Torque** app **does not send** `Authorization` headers.  
+- **Do not** put a token in the URL. Prefer:  
+  - **VPN** (WireGuard, Tailscale) or **LAN‑only** access  
+  - Reverse proxy (Nginx, Traefik) with **server‑side auth injection** (advanced)  
+- If you expose HTTPS publicly, restrict by IP / GeoIP / rate‑limit, and watch the logs.
+
+> When in doubt, use a VPN: simple, effective, and avoids token leaks.
+
+---
+
+<a id="troubleshooting"></a>
 
 ## 🛠️ Troubleshooting
 
-- **“IGNORED / No matching route”** in logs → the `eml=` URL param doesn’t match **any configured entry**.
-- **404 Not Found** → no active entry for the integration (HTTP view inactive).
-- **No data** → ensure `session=${session}` and OBD/network connectivity.
+| Issue | Hints |
+|---|---|
+| No entities created | Check the URL in Torque, make sure PIDs are enabled, and that the phone can reach `https://.../api/obd` (test in a browser). |
+| `401/403 Unauthorized` | The endpoint is protected. Use VPN/LAN, or a reverse proxy that handles HA auth server‑side. |
+| `404` | Wrong path (must be `/api/obd`) or the integration didn’t load (restart HA). |
+| Inconsistent values | Avoid duplicated derived PIDs (e.g., L/100 *and* MPG). Clean up and restart. |
+| No GPS | Enable GPS PIDs in Torque or add the **fallback** `lat/lon/alt/acc` in the URL. |
+| Slow / battery drain | Don’t tick **all** PIDs. Keep only essentials for smooth refresh. |
 
-### Debug logs (optional)
-```yaml
-logger:
-  logs:
-    custom_components.torque_pro.api: debug
-    custom_components.torque_pro.coordinator: debug
-```
-You’ll see `Resolved profile → …` with the computed ID.
+**Where to see logs?**  
+*Settings → System → Logs* (filter by `obd_drive`). Enable *debug* level if needed.
 
 ---
+
+<a id="faq"></a>
+
+## ❓ FAQ
+
+**Can I have multiple vehicles?**  
+Yes. Use `profileName=<profile>` and/or `eml=...` to separate devices. Create one entry per vehicle if you prefer.
+
+**GET or POST?**  
+Both are supported. `POST` is slightly cleaner for larger payloads.
+
+**Are units metric?**  
+Yes. The integration ingests metric. Do not force `imperial` in Torque.
+
+**Do I need to open a port to the Internet?**  
+No if you use a **VPN**. If you expose publicly, lock it down **heavily** (HTTPS, IP filtering, rate‑limit).
+
+---
+
+<a id="roadmap"></a>
+
+## 🗺️ Roadmap
+
+- Better detection of custom PIDs
+- Aggregation options (trips / refuels)
+- Additional translations
+- Broader tests & QA
+
+> Open an *Issue* or *Discussion* to propose ideas.
+
+---
+
+<a id="contributing"></a>
+
+## 🤝 Contributing
+
+Contributions are welcome! Submit a **PR** with a clear description or open an **Issue** to discuss a bug/feature. Please follow code style and add tests when possible.
+
+---
+
+<a id="license"></a>
 
 ## 📄 License
 
-This distribution is governed by the **Written Authorization Required License (LAER-TPHA-1.0)** — *Permitted use:* **Torque Pro ↔ Home Assistant**.
-
-**TL;DR**: **personal, non-commercial** use. Any other use requires **written authorization**.
-
-### ✅ Allowed without prior approval
-- Install and use **on your own Home Assistant instance**, for **non-commercial** purposes.
-
-### ❌ Forbidden without written authorization
-- Reproduction, forks or published derivative works,
-- Modification, publication or **distribution** of code/binary,
-- Integration into other projects/products,
-- Hosting, **SaaS**, marketplaces, images/packs,
-- Any **commercial** use (direct or indirect).
-
-See [`LICENSE`](./LICENSE).  
-Request authorization: [open a “License request” issue](../../issues/new?assignees=&labels=license%2Clegal&template=license_request.yml&title=License%20request%3A%20).
-
-> *“Torque”, “Torque Lite” and “Torque Pro” are trademarks of their respective owners.*
+This project is distributed under a license **to be specified by the repository owner** (MIT recommended).  
+Create a `LICENSE` file at the root if not already present.
 
 ---
 
-## 🙌 Acknowledgements
+<a id="credits"></a>
 
-- **Torque Pro** app (Android — OBD-II)
+## 🙏 Credits
+
 - **Home Assistant** community
 
 ---
 
-## ☕ Support
+## 🧾 Changelog
 
-If you enjoy this project, you can support me here:  
-[![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nothing_one)
-
----
-
-## 📄 Changelog (excerpt)
-
-- **2025.09.3** — Manifest versioning, API/coordinator robustness cleanup, FR i18n, hardened diagnostics.  
-- **2025.09.3.1** — Multi-entry email routing, metric-native ingestion (unit preference annotation), legacy unique_id preservation, persistent HTTP view (inactive 404), app version parsing fix.  
-- **2025.09.3.2** — Deterministic per-vehicle profile ID (slug(profileName)+id[:4]+email-salt) to prevent cross-device fusion; rounded trip times (s→min) and dropped negative GPS accuracy; improved profile name normalization/memory; enriched diagnostics (profile.Id, unit_preference, app version); sensor platform overhaul: stable unique_id + migration, suggested precision & device/state classes, zero-default for trip/distance/time counters, non-finite filtering, improved icon mapping.
+- **2025.9.0** — Initial public release: Torque uploads, auto PIDs, GPS device_tracker, UI config, HACS.
