@@ -15,11 +15,19 @@ from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.const import STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.helpers import entity_registry as er
 
-from .const import DOMAIN
+from .const import DOMAIN, OBD_CODES
 from .coordinator import OBDCoordinator
 from .entity import OBDEntity
 
 _LOGGER = logging.getLogger(__name__)
+
+# --- Fallback d’unités par clé courte (avant 1ʳᵉ trame) --------------------
+# Construit un mapping { shortName(lower) -> unit } à partir d'OBD_CODES.
+DEFAULT_UNIT_BY_KEY: dict[str, str] = {
+    (d.get("shortName") or "").strip().lower(): (d.get("unit") or "").strip()
+    for d in OBD_CODES.values()
+    if (d.get("shortName") or "").strip()
+}
 
 # --- Icônes MDI par clé courte (prioritaire) -------------------------------
 ICON_BY_KEY: dict[str, str] = {
@@ -410,11 +418,17 @@ class OBDSensor(OBDEntity, SensorEntity, RestoreEntity):
 
     @property
     def native_unit_of_measurement(self) -> str | None:
-        """Lit l’unité dynamiquement depuis la session du coordinator."""
+        """Unité : d'abord la session (si déjà reçue), sinon la valeur par défaut
+        issue du catalogue OBD_CODES pour ne pas perdre l'unité au reboot.
+        """
         veh = self.coordinator_vehicle() or {}
         meta_by_key = veh.get("meta") or {}
         unit = (meta_by_key.get(self._sensor_key, {}).get("unit") or "").strip()
-        return unit or None
+        if unit:
+            return unit
+        # Fallback avant la 1ʳᵉ trame
+        key = (self._sensor_key or "").lower()
+        return (DEFAULT_UNIT_BY_KEY.get(key) or None)
 
     @property
     def extra_state_attributes(self) -> dict | None:
