@@ -14,7 +14,6 @@ from .api import OBDReceiveDataView
 from .const import (
     DOMAIN,
     PLATFORMS,
-    NAME,
     CONF_EMAIL,
     CONF_IMPERIAL,
     CONF_LANGUAGE,
@@ -40,7 +39,9 @@ _LOGGER = logging.getLogger(__name__)
 async def _async_forget_vehicle_core(
     hass: HomeAssistant, *, car_id: str, entry_id: str | None
 ) -> int:
-    """Supprime toutes les entités + l'appareil d'un véhicule et retourne le nb d'entités supprimées."""
+    """Supprime toutes les entités + l'appareil d'un véhicule, puis purge le coordinator.
+    Retourne le nombre d'entités supprimées.
+    """
     entreg = er.async_get(hass)
     devreg = dr.async_get(hass)
 
@@ -52,16 +53,60 @@ async def _async_forget_vehicle_core(
                 entry_id = next(iter(dev.config_entries), None)
         except Exception:
             entry_id = None
+            
+    # 0) Prévenir les coordinateurs concernés
+    targeted: list[tuple[str, OBDCoordinator]] = []
+    store = hass.data.get(DOMAIN, {})
+    if entry_id:
+        coordinator = None
+        entry_store = store.get(entry_id)
+        if isinstance(entry_store, dict):
+            coordinator = entry_store.get("coordinator")
+        if isinstance(coordinator, OBDCoordinator):
+            targeted.append((entry_id, coordinator))
+    else:
+        for entry_key, entry_store in store.items():
+            if not isinstance(entry_store, dict):
+                continue
+            coordinator = entry_store.get("coordinator")
+            if isinstance(coordinator, OBDCoordinator):
+                targeted.append((str(entry_key), coordinator))
 
+    if targeted:
+        targeted_ids = ", ".join(entry_key for entry_key, _ in targeted)
+        _LOGGER.debug(
+            "forget_vehicle: invoking coordinator cleanup for %s (entries=%s)",
+            car_id,
+            targeted_ids,
+        )
+        for entry_key, coordinator in targeted:
+            try:
+                coordinator.forget_vehicle(car_id)
+            except Exception:  # noqa: BLE001
+                _LOGGER.exception(
+                    "forget_vehicle: coordinator cleanup failed for entry_id=%s",
+                    entry_key,
+                )
+                
     # 1) Supprimer toutes les entités OBD pour ce car_id
-    prefix = f"{DOMAIN}-{car_id}-"
+    #    - sensors: unique_id = "{DOMAIN}-{car_id}-{short}"
+    #    - device_tracker: unique_id = "{DOMAIN}-{car_id}"
+    base_unique_id = f"{DOMAIN}-{car_id}"
+    prefix = f"{base_unique_id}-"
+    tracker_uid = f"{DOMAIN}-{car_id}"
     to_remove: list[str] = []
+
     for ent in list(entreg.entities.values()):
         if ent.platform != DOMAIN:
             continue
         if entry_id and ent.config_entry_id != entry_id:
             continue
-        if ent.unique_id and ent.unique_id.startswith(prefix):
+        if not ent.unique_id:
+            continue
+        unique_id = ent.unique_id
+        if not unique_id:
+            continue
+        if unique_id == base_unique_id or unique_id.startswith(prefix):
             to_remove.append(ent.entity_id)
 
     for entity_id in to_remove:
@@ -78,8 +123,54 @@ async def _async_forget_vehicle_core(
     except Exception:  # noqa: BLE001
         _LOGGER.exception("forget_vehicle: failed removing device for %s", car_id)
 
-    _LOGGER.info("Vehicle %s forgotten (entities removed=%d)", car_id, len(to_remove))
-    return len(to_remove)
+    # 3) Purger le coordinator (après suppression des entités + device)
+    try:
+        store = hass.data.get(DOMAIN, {})
+        if entry_id:
+            coord = (store.get(entry_id, {}) or {}).get("coordinator")
+            if coord and hasattr(coord, "forget_vehicle"):
+                coord.forget_vehicle(car_id)  # type: ignore[attr-defined]
+                _LOGGER.debug(
+                    "Vehicle %s caches cleared from coordinator for entry %s",
+                    car_id,
+                    entry_id,
+                )
+        else:
+            # Best-effort: purger tous les coordinators connus si entry_id inconnu
+            for v in store.values():
+                if isinstance(v, dict) and "coordinator" in v:
+                    coord = v.get("coordinator")
+                    try:
+                        if coord and hasattr(coord, "forget_vehicle"):
+                            coord.forget_vehicle(car_id)  # type: ignore[attr-defined]
+                    except Exception:  # noqa: BLE001
+                        _LOGGER.exception(
+                            "forget_vehicle: coordinator purge failed for %s", car_id
+                        )
+    except Exception:  # noqa: BLE001
+        _LOGGER.exception(
+            "forget_vehicle: unexpected error while purging coordinator for %s", car_id
+        )
+        
+    removed_count = len(to_remove)
+
+    coordinator = None
+    if entry_id:
+        store = hass.data.get(DOMAIN, {})
+        entry_store = store.get(entry_id)
+        if entry_store:
+            coordinator = entry_store.get("coordinator")
+
+    if coordinator:
+        try:
+            coordinator.forget_vehicle(car_id)
+        except Exception:  # noqa: BLE001
+            _LOGGER.exception(
+                "forget_vehicle: failed purging coordinator data for %s", car_id
+            )
+
+    _LOGGER.debug("Vehicle %s forgotten (entities removed=%d)", car_id, removed_count)
+    return removed_count
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:

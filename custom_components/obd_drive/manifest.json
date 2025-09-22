@@ -1,7 +1,7 @@
 {
   "domain": "obd_drive",
   "name": "OBD Drive",
-  "version": "2025.X.X",
+  "version": "2025.09.9",
   "documentation": "https://github.com/Marlboro62/OBD-Drive",
   "issue_tracker": "https://github.com/Marlboro62/OBD-Drive/issues",
   "codeowners": ["@Marlboro62"],
