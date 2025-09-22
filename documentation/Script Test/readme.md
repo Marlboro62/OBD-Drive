@@ -46,16 +46,6 @@ By contrast, **altitude (`gpsalt`)** and **accuracy (`gpsaccuracy`)** remain nor
 
 ---
 
-## 🗂️ Installation
-
-```bash
-git clone <your-repo>.git
-cd <your-repo>
-# Script is named Test_sensor.ps1 and lives at the repo root (or adjust paths)
-```
-
----
-
 ## ⚙️ Configuration
 
 Open `Test_sensor.ps1` and edit the **Config** section:
