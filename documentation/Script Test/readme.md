@@ -7,7 +7,7 @@
 ## ✨ Overview
 
 The script:
-- builds a **JSON payload** containing metadata (email, profile, vehicle ID), a **demo GPS position**, and a **very large superset of OBD‑II PIDs** (realistic pseudo‑random values);  
+- builds a **JSON payload** with metadata (email, profile, vehicle ID), a **demo GPS position**, and a **very large superset of OBD‑II PIDs** (realistic pseudo‑random values);
 - sends it as `POST` to `http(s)://<BaseUrl>/api/obd` with a **Bearer token**.
 
 Typical console output:
@@ -27,8 +27,8 @@ In the integration, we **do not create** two sensors `gpslat` and `gpslon`. Inst
 - **+ 1** `device_tracker` (GPS)  
 - **= 189 visible entities** (**188 sensors** + **1 device_tracker**)
 
-Where this is handled in code:
-- The **coordinator** explicitly **excludes** `gpslat` and `gpslon` when deciding which *sensors* to create (“if key = lat/lon → don’t make a sensor”).  
+Where this is handled in the code:
+- The **coordinator** explicitly **excludes** `gpslat` and `gpslon` when deciding which *sensors* to create (“if key = lat/lon → don’t create a sensor”).  
 - The **coordinator** **creates the `device_tracker`** as soon as it sees `lat` and `lon` in the received values for the vehicle (exposed via the `OBDDeviceTracker` class).  
 
 By contrast, **altitude (`gpsalt`)** and **accuracy (`gpsaccuracy`)** remain normal *sensors* and are counted among the **188 sensors**.
@@ -93,40 +93,60 @@ pwsh ./Test_sensor.ps1
 powershell -ExecutionPolicy Bypass -File .\Test_sensor.ps1
 ```
 
-The script prints the target URL, the **number of sensors** sent (e.g. `190`), then the **API response**.  
+The script prints the target URL, the **number of sensors** sent (e.g., `190`), then the **API response**.  
 On failure, it prints a detailed error message.
 
 ---
 
-## 📸 Screenshots
+## 📸 Step‑by‑step (screenshots)
 
-> Images are stored under `assets/screens/`.  
-> **Update the file names below** to match your repo if needed.
+> Chronological order of the screens to configure the **OBD Drive** integration and send sensors with `Test_sensor.ps1`.
+> (Images hosted in `assets/screens/` on the repo.)
 
-### Quick preview (grid)
+1. **Open the configuration form**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/1.png?raw=1" alt="OBD Drive — empty form" width="720" /></p>
 
-<p align="center">
-  <img src="assets/screens/overview.png" alt="Home Assistant overview" width="420" />
-  <img src="assets/screens/entities.png" alt="OBD entities list" width="420" />
-</p>
-<p align="center">
-  <img src="assets/screens/device-tracker.png" alt="Device tracker (map)" width="420" />
-  <img src="assets/screens/history.png" alt="Sensor history" width="420" />
-</p>
+2. **Enter email + options**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/2.png?raw=1" alt="OBD Drive — filled form" width="720" /></p>
 
-### Detailed sections
+3. **Creation confirmed**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/3.png?raw=1" alt="OBD Drive — configuration created" width="1200" /></p>
 
-#### Home Assistant dashboard
-![Dashboard](assets/screens/overview.png)
+4. **Prepare to run the PowerShell script**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/4.png?raw=1" alt="PowerShell window ready" width="1200" /></p>
 
-#### Entities list (188 sensors + 1 device_tracker)
-![Entities](assets/screens/entities.png)
+5. **Run the script — POST & OK response (189 visible entities)**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/5.png?raw=1" alt="Script run — HA OK response" width="1400" /></p>
 
-#### Device tracker (GPS)
-![Device tracker](assets/screens/device-tracker.png)
+6. **Device view: PS1 Full (panels & categories)**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/6.png?raw=1" alt="PS1 Full device — overview" width="1200" /></p>
 
-#### Sensor history (e.g., engine RPM)
-![History](assets/screens/history.png)
+7. **Sensors list — page 1**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/7.png?raw=1" alt="Sensors list — page 1" width="1200" /></p>
+
+8. **Sensors list — page 2**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/8.png?raw=1" alt="Sensors list — page 2" width="1200" /></p>
+
+9. **Sensors list — page 3**  
+   <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/9.png?raw=1" alt="Sensors list — page 3" width="1200" /></p>
+
+10. **Sensors list — page 4 (bottom + Diagnostic card)**  
+    <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/10.png?raw=1" alt="Sensors list — page 4 (bottom + Diagnostic card)" width="1400" /></p>
+
+11. **Sensors list — page 5**  
+    <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/11.png?raw=1" alt="Sensors list — page 5" width="1200" /></p>
+
+12. **Sensors list — page 6**  
+    <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/12.png?raw=1" alt="Sensors list — page 6" width="1200" /></p>
+
+13. **Sensors list — page 7**  
+    <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/13.png?raw=1" alt="Sensors list — page 7" width="1200" /></p>
+
+14. **Sensors list — page 8**  
+    <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/14.png?raw=1" alt="Sensors list — page 8" width="1200" /></p>
+
+15. **Sensors list — page 9 (end)**  
+    <p align="center"><img src="https://github.com/Marlboro62/OBD-Drive/blob/main/assets/screens/15.png?raw=1" alt="Sensors list — page 9 (end)" width="1400" /></p>
 
 ---
 
