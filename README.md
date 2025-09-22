@@ -1,4 +1,4 @@
-![OBD Drive](https://raw.githubusercontent.com/Marlboro62/OBD-Drive/main/docs/images/logo.png)
+![OBD Drive](https://github.com/Marlboro62/OBD-Drive/blob/main/assets/logo.png)
 
 [![Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/nothing_one)
 
