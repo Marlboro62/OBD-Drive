@@ -56,7 +56,7 @@ def _collect_view_runtime(hass: HomeAssistant) -> dict[str, Any]:
         return {}
     # Only expose non-sensitive runtime flags
     return {
-        "url": getattr(view, "url", "/api/OBD"),
+        "url": getattr(view, "url", "/api/obd"),
         "requires_auth": bool(getattr(view, "requires_auth", True)),
         "imperial_units": bool(getattr(view, "imperial", False)),
         "language_runtime": getattr(view, "lang", "en"),

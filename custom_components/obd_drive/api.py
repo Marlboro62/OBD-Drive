@@ -202,9 +202,9 @@ def _lookup_canonical(name_map: dict[str, str], profile_name: str) -> str:
     return name_map.get(low) or name_map.get(slug) or ""
 
 class OBDReceiveDataView(HomeAssistantView):
-    # Si tu préfères /api/OBD, change ces 2 champs.
-    url = "/api/OBD"
-    name = "api:OBD"
+    # Si tu préfères /api/obd, change ces 2 champs.
+    url = "/api/obd"
+    name = "api:obd"
     requires_auth = True
 
     coordinator: Any | None = None

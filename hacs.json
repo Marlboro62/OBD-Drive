@@ -1,5 +1,5 @@
 {
-  "name": "ODB Drive",
+  "name": "OBD Drive",
   "domains": ["obd_drive"],
   "country": ["*"],  
   "render_readme": true
